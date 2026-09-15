@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Matchday — Lineup Builder</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar__title">
+    <span class="topbar__crest" aria-hidden="true">&#9917;</span>
+    <div>
+      <input id="teamNameInput" class="team-name-input" value="My Team" aria-label="Team name">
+      <p class="topbar__sub">Lineup builder</p>
+    </div>
+  </div>
+
+  <form id="addPlayerForm" class="add-player-form">
+    <input id="playerNameInput" type="text" placeholder="Player name" autocomplete="off" required aria-label="Player name">
+    <select id="playerPositionInput" aria-label="Position"></select>
+    <button type="submit">Add player</button>
+  </form>
+</header>
+
+<main class="layout">
+
+  <section class="bench" aria-label="Substitutes bench">
+    <div class="bench__header">
+      <h2>Bench</h2>
+      <span id="benchCount" class="bench__count">0 players</span>
+    </div>
+    <p class="bench__hint">Drag a name onto the pitch to send them out.</p>
+    <div id="rosterGroups" class="roster-groups"></div>
+    <p id="emptyRosterMsg" class="empty-msg">Add your squad above to get started.</p>
+
+    <details class="categories-panel">
+      <summary>Manage positions</summary>
+      <div class="categories-panel__body">
+        <div id="categoryList" class="category-list"></div>
+        <form id="addCategoryForm" class="add-category-form">
+          <input type="color" id="categoryColorInput" value="#6C6F41" aria-label="Category color">
+          <input type="text" id="categoryNameInput" placeholder="e.g. Outside Back, Left Wing" autocomplete="off" required aria-label="New position name">
+          <button type="submit">Add</button>
+        </form>
+      </div>
+    </details>
+  </section>
+
+  <section class="pitch-wrap" aria-label="Lineup pitch">
+    <div class="pitch-toolbar">
+      <h2>On the pitch</h2>
+      <button id="clearPitchBtn" type="button" class="ghost-btn">Bench everyone</button>
+    </div>
+    <div id="pitch" class="pitch">
+      <div class="pitch__markings" aria-hidden="true">
+        <div class="pitch__stripe pitch__stripe--1"></div>
+        <div class="pitch__stripe pitch__stripe--2"></div>
+        <div class="pitch__stripe pitch__stripe--3"></div>
+        <div class="pitch__centerline"></div>
+        <div class="pitch__centercircle"></div>
+        <div class="pitch__box pitch__box--top"></div>
+        <div class="pitch__box pitch__box--bottom"></div>
+        <div class="pitch__box-small pitch__box-small--top"></div>
+        <div class="pitch__box-small pitch__box-small--bottom"></div>
+      </div>
+      <p id="pitchEmptyMsg" class="pitch__empty-msg">Drag players here to build your starting XI</p>
+    </div>
+  </section>
+
+</main>
+
+<script src="app.js"></script>
+</body>
+</html>
