@@ -15,8 +15,8 @@
 
   /** @type {{id:string, label:string, color:string}[]} */
   var categories = loadJSON(STORAGE_KEY_CATEGORIES, null) || DEFAULT_CATEGORIES.slice();
-  /** @type {{id:string, name:string, position:string}[]} */
-  var players = loadJSON(STORAGE_KEY_PLAYERS, []);
+  /** @type {{id:string, name:string, positions:string[]}[]} */
+  var players = migratePlayers(loadJSON(STORAGE_KEY_PLAYERS, []));
   /** @type {Object.<string,{x:number,y:number}>} keyed by player id */
   var lineup = loadJSON(STORAGE_KEY_LINEUP, {});
 
@@ -24,7 +24,7 @@
     teamNameInput: document.getElementById("teamNameInput"),
     addPlayerForm: document.getElementById("addPlayerForm"),
     playerNameInput: document.getElementById("playerNameInput"),
-    playerPositionInput: document.getElementById("playerPositionInput"),
+    playerPositionsField: document.getElementById("playerPositionsField"),
     rosterGroups: document.getElementById("rosterGroups"),
     emptyRosterMsg: document.getElementById("emptyRosterMsg"),
     benchCount: document.getElementById("benchCount"),
@@ -68,6 +68,16 @@
 
   // ---------- Data helpers ----------
 
+  function migratePlayers(list) {
+    return list.map(function (p) {
+      if (Array.isArray(p.positions)) return p;
+      var legacy = p.position;
+      delete p.position;
+      p.positions = legacy ? [legacy] : [];
+      return p;
+    });
+  }
+
   function loadJSON(key, fallback) {
     try {
       var raw = localStorage.getItem(key);
@@ -92,17 +102,6 @@
     return null;
   }
 
-  function abbreviate(label) {
-    var words = label.trim().split(/\s+/).filter(Boolean);
-    if (words.length >= 2) {
-      return (words[0][0] + words[1][0]).toUpperCase();
-    }
-    if (words.length === 1) {
-      return words[0].slice(0, 2).toUpperCase();
-    }
-    return "??";
-  }
-
   function nextColorSuggestion() {
     els.categoryColorInput.value = COLOR_SUGGESTIONS[colorSuggestionIndex % COLOR_SUGGESTIONS.length];
     colorSuggestionIndex++;
@@ -114,13 +113,21 @@
     e.preventDefault();
     var name = els.playerNameInput.value.trim();
     if (!name) return;
-    var position = els.playerPositionInput.value;
-    if (!position && categories.length > 0) position = categories[0].id;
-    players.push({ id: makeId("p"), name: name, position: position });
+    var positions = getCheckedPositionIds();
+    if (positions.length === 0) {
+      alert("Select at least one position for this player.");
+      return;
+    }
+    players.push({ id: makeId("p"), name: name, positions: positions });
     savePlayers();
     els.playerNameInput.value = "";
     els.playerNameInput.focus();
     render();
+  }
+
+  function getCheckedPositionIds() {
+    var inputs = els.playerPositionsField.querySelectorAll("input[type=checkbox]:checked");
+    return Array.prototype.map.call(inputs, function (input) { return input.value; });
   }
 
   function removePlayerFromSquad(id) {
@@ -171,7 +178,7 @@
   }
 
   function removeCategory(id) {
-    var inUse = players.some(function (p) { return p.position === id; });
+    var inUse = players.some(function (p) { return p.positions.indexOf(id) !== -1; });
     if (inUse) {
       alert("Move or remove the players in this position before deleting it.");
       return;
@@ -223,30 +230,47 @@
   // ---------- Rendering ----------
 
   function render() {
-    renderPositionSelect();
+    renderPositionToggles();
     renderCategoryList();
     renderRoster();
     renderPitch();
   }
 
-  function renderPositionSelect() {
-    var current = els.playerPositionInput.value;
-    els.playerPositionInput.innerHTML = "";
-    categories.forEach(function (cat) {
-      var opt = document.createElement("option");
-      opt.value = cat.id;
-      opt.textContent = cat.label;
-      els.playerPositionInput.appendChild(opt);
+  function renderPositionToggles() {
+    var previouslyChecked = getCheckedPositionIds();
+    var hadAnyToggles = els.playerPositionsField.children.length > 0;
+    els.playerPositionsField.innerHTML = "";
+
+    categories.forEach(function (cat, index) {
+      var label = document.createElement("label");
+      label.className = "position-toggle";
+
+      var input = document.createElement("input");
+      input.type = "checkbox";
+      input.value = cat.id;
+      var shouldCheck = hadAnyToggles ? previouslyChecked.indexOf(cat.id) !== -1 : index === 0;
+      input.checked = shouldCheck;
+      if (shouldCheck) label.classList.add("position-toggle--checked");
+
+      input.addEventListener("change", function () {
+        label.classList.toggle("position-toggle--checked", input.checked);
+      });
+
+      var dot = document.createElement("span");
+      dot.className = "position-toggle__dot";
+      dot.style.background = cat.color;
+
+      label.appendChild(input);
+      label.appendChild(dot);
+      label.appendChild(document.createTextNode(cat.label));
+      els.playerPositionsField.appendChild(label);
     });
-    if (categories.some(function (c) { return c.id === current; })) {
-      els.playerPositionInput.value = current;
-    }
   }
 
   function renderCategoryList() {
     els.categoryList.innerHTML = "";
     categories.forEach(function (cat) {
-      var count = players.filter(function (p) { return p.position === cat.id; }).length;
+      var count = players.filter(function (p) { return p.positions.indexOf(cat.id) !== -1; }).length;
 
       var row = document.createElement("div");
       row.className = "category-item";
@@ -287,7 +311,7 @@
     els.emptyRosterMsg.style.display = players.length === 0 ? "block" : "none";
 
     categories.forEach(function (cat) {
-      var group = benched.filter(function (p) { return p.position === cat.id; });
+      var group = benched.filter(function (p) { return p.positions.indexOf(cat.id) !== -1; });
       if (group.length === 0) return;
 
       var section = document.createElement("div");
@@ -305,16 +329,18 @@
       var list = document.createElement("div");
       list.className = "roster-group__list";
       group.forEach(function (p) {
-        list.appendChild(buildChip(p, cat, { removable: true, source: "bench" }));
+        list.appendChild(buildChip(p, { removable: true, source: "bench" }));
       });
       section.appendChild(list);
 
       els.rosterGroups.appendChild(section);
     });
 
-    // Players whose category was deleted from under them (shouldn't normally
-    // happen since deletion is blocked while in use, but stay defensive).
-    var orphaned = benched.filter(function (p) { return !categoryById(p.position); });
+    // Players with no valid assigned position at all (shouldn't normally
+    // happen since category deletion is blocked while in use, but stay defensive).
+    var orphaned = benched.filter(function (p) {
+      return p.positions.length === 0 || p.positions.every(function (id) { return !categoryById(id); });
+    });
     if (orphaned.length > 0) {
       var section2 = document.createElement("div");
       section2.className = "roster-group roster-group--visible";
@@ -325,7 +351,7 @@
       var list2 = document.createElement("div");
       list2.className = "roster-group__list";
       orphaned.forEach(function (p) {
-        list2.appendChild(buildChip(p, { label: "?", color: "#8B8577" }, { removable: true, source: "bench" }));
+        list2.appendChild(buildChip(p, { removable: true, source: "bench" }));
       });
       section2.appendChild(list2);
       els.rosterGroups.appendChild(section2);
@@ -342,30 +368,26 @@
     ids.forEach(function (id) {
       var player = players.find(function (p) { return p.id === id; });
       if (!player) { delete lineup[id]; return; }
-      var cat = categoryById(player.position) || { label: "?", color: "#8B8577" };
       var token = document.createElement("div");
       token.className = "pitch-token";
       token.style.left = lineup[id].x + "%";
       token.style.top = lineup[id].y + "%";
-      token.appendChild(buildChip(player, cat, { removable: true, source: "pitch" }));
+      token.appendChild(buildChip(player, { removable: true, source: "pitch" }));
       els.pitch.appendChild(token);
     });
   }
 
-  function buildChip(player, cat, opts) {
+  function buildChip(player, opts) {
     var chip = document.createElement("div");
     chip.className = "chip";
     chip.draggable = true;
     chip.dataset.id = player.id;
+    var cats = player.positions.map(categoryById).filter(Boolean);
+    chip.title = cats.length > 0
+      ? cats.map(function (c) { return c.label; }).join(", ")
+      : "Unassigned";
     chip.addEventListener("dragstart", function (e) { onDragStart(e, player.id); });
     chip.addEventListener("dragend", onDragEnd);
-
-    var badge = document.createElement("span");
-    badge.className = "chip__badge";
-    badge.style.background = cat.color;
-    badge.textContent = abbreviate(cat.label);
-    badge.title = cat.label;
-    chip.appendChild(badge);
 
     var nameSpan = document.createElement("span");
     nameSpan.textContent = player.name;

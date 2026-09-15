@@ -22,7 +22,7 @@
 
   <form id="addPlayerForm" class="add-player-form">
     <input id="playerNameInput" type="text" placeholder="Player name" autocomplete="off" required aria-label="Player name">
-    <select id="playerPositionInput" aria-label="Position"></select>
+    <div id="playerPositionsField" class="position-toggles" role="group" aria-label="Positions this player can play"></div>
     <button type="submit">Add player</button>
   </form>
 </header>
@@ -34,7 +34,7 @@
       <h2>Bench</h2>
       <span id="benchCount" class="bench__count">0 players</span>
     </div>
-    <p class="bench__hint">Drag a name onto the pitch to send them out.</p>
+    <p class="bench__hint">Drag a name onto the pitch to send them out. Players who can play more than one position show up under each.</p>
     <div id="rosterGroups" class="roster-groups"></div>
     <p id="emptyRosterMsg" class="empty-msg">Add your squad above to get started.</p>
 

@@ -26,15 +26,18 @@ from this folder, then visit `http://localhost:8000`.
 
 ## How it works
 
-- **Add players**: type a name, pick a position, and click "Add player."
+- **Add players**: type a name, check every position they can play (one or
+  more), and click "Add player."
 - **Positions are yours to define**: it ships with Goalkeeper, Defense,
   Midfield, and Forward, but open "Manage positions" (under the bench) to
   add anything more specific — Outside Back, Left Wing, Holding Mid,
   whatever fits how you actually coach. Give each one a color; that color
-  shows up as the little badge on every player chip. A position can only
-  be deleted once no players are assigned to it.
-- **Bench**: players are auto-grouped by position. This list is effectively
-  your subs list, since anyone on the pitch is removed from it.
+  shows up as a badge on every player chip. A position can only be deleted
+  once no players are assigned to it.
+- **Bench**: players are auto-grouped by position, and a player who can
+  play more than one position shows up under each of them — so you can
+  see their versatility at a glance. This list is effectively your subs
+  list, since anyone on the pitch is removed from it.
 - **Build a lineup**: drag a player's chip from the bench onto the pitch
   (a vertical field, goal at top and bottom) and drop it wherever you want
   them positioned.

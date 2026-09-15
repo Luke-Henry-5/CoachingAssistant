@@ -41,9 +41,9 @@ button, input, select {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 18px 28px;
+  justify-content: flex-start;
+  gap: 22px;
+  padding: 14px 28px;
   background: var(--ink);
   color: var(--chalk);
   border-bottom: 4px solid var(--gold);
@@ -52,11 +52,12 @@ button, input, select {
 .topbar__title {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
+  flex: none;
 }
 
 .topbar__crest {
-  font-size: 34px;
+  font-size: 28px;
   line-height: 1;
 }
 
@@ -67,10 +68,10 @@ button, input, select {
   color: var(--chalk);
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: 28px;
+  font-size: 22px;
   letter-spacing: 0.3px;
   padding: 2px 0;
-  max-width: 320px;
+  max-width: 220px;
 }
 
 .team-name-input:hover,
@@ -81,18 +82,30 @@ button, input, select {
 
 .topbar__sub {
   margin: 0;
-  font-size: 12.5px;
+  font-size: 11.5px;
   color: #B9C2BC;
   letter-spacing: 0.2px;
 }
 
 .add-player-form {
   display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
-.add-player-form input[type="text"],
+.add-player-form input[type="text"] {
+  flex: none;
+  width: 170px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid #3A463D;
+  background: #1E2A22;
+  color: var(--chalk);
+  font-size: 14px;
+}
+
 .add-player-form select {
   padding: 10px 12px;
   border-radius: 8px;
@@ -112,7 +125,61 @@ button, input, select {
   outline-offset: 1px;
 }
 
+.position-toggles {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 6px;
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow-x: auto;
+  padding: 3px 2px 7px;
+  scrollbar-width: thin;
+}
+
+.position-toggles::-webkit-scrollbar { height: 5px; }
+.position-toggles::-webkit-scrollbar-thumb { background: #3A463D; border-radius: 999px; }
+
+.position-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 8px 11px;
+  border-radius: 999px;
+  border: 1px solid #3A463D;
+  background: #1E2A22;
+  color: #C9D1CB;
+  font-size: 12.5px;
+  white-space: nowrap;
+  flex: none;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.12s ease, border-color 0.12s ease, color 0.12s ease;
+}
+
+.position-toggle input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.position-toggle__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex: none;
+}
+
+.position-toggle--checked {
+  background: var(--gold);
+  border-color: var(--gold);
+  color: #241A08;
+  font-weight: 600;
+}
+
 .add-player-form button {
+  flex: none;
   padding: 10px 18px;
   border-radius: 8px;
   border: none;
@@ -356,19 +423,6 @@ button, input, select {
 .chip:active { cursor: grabbing; }
 
 .chip.dragging { opacity: 0.35; }
-
-.chip__badge {
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  color: #fff;
-  font-size: 10px;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex: none;
-}
 
 .chip__remove {
   border: none;
